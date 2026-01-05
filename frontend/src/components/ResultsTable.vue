@@ -24,7 +24,7 @@
         class="results-table"
         :header-cell-style="{ background: 'transparent' }"
       >
-        <el-table-column prop="Index" :label="$t('results.id')" width="120" fixed show-overflow-tooltip>
+        <el-table-column prop="Index" :label="$t('results.id')" width="150" fixed show-overflow-tooltip>
           <template #default="scope">
             <span class="primer-id">{{ scope.row.Index }}</span>
           </template>
@@ -57,7 +57,7 @@
           </template>
         </el-table-column>
   
-        <el-table-column prop="Product_Size" :label="$t('results.size')" width="100" align="center">
+        <el-table-column prop="Product_Size" :label="$t('results.size')" width="140" align="center">
           <template #default="scope">
             <span class="size-badge">{{ scope.row.Product_Size }}bp</span>
           </template>

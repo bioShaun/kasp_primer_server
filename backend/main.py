@@ -80,6 +80,29 @@ def run_pipeline(job_dir: Path, input_file: Path, genome_path: str):
 
         if result.returncode != 0:
             (job_dir / "error.log").write_text(result.stderr)
+        else:
+            # Check if result file was created and is not empty
+            result_file = job_dir / "all_KASP_primers_summary.txt"
+            if not result_file.exists() or result_file.stat().st_size == 0:
+                # Extract key error info for user-friendly message
+                stderr_text = result.stderr.strip()
+                
+                # Check for common error patterns
+                if 'Entry not found' in stderr_text or 'not found in BLAST database' in stderr_text:
+                    # Extract the chromosome IDs that failed
+                    import re
+                    failed_ids = re.findall(r'Entry not found: (\S+)', stderr_text)
+                    unique_ids = list(dict.fromkeys(failed_ids))  # Remove duplicates, preserve order
+                    if unique_ids:
+                        error_msg = f"未能设计引物：在参考基因组中未找到以下染色体ID: {', '.join(unique_ids)}\n请检查染色体ID是否正确（例如：chr7A 而非 7A）"
+                    else:
+                        error_msg = "未能设计引物：在参考基因组中未找到指定的染色体ID\n请检查染色体ID是否正确"
+                elif 'No sequence retrieved' in stderr_text:
+                    error_msg = "未能获取序列：请检查输入坐标是否在参考基因组范围内"
+                else:
+                    error_msg = "未能设计任何引物。请检查输入格式和染色体ID是否正确。"
+                
+                (job_dir / "error.log").write_text(error_msg)
     except subprocess.TimeoutExpired:
         (job_dir / "error.log").write_text("Pipeline execution timed out after 300 seconds.")
     except FileNotFoundError:
