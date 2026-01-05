@@ -127,11 +127,19 @@
             </el-table>
 
             <div class="download-section">
-              <el-button @click="downloadFile('all_KASP_primers_summary.txt')">
-                📥 下载摘要
+              <el-button 
+                type="default" 
+                class="download-btn"
+                @click="downloadFile('all_KASP_primers_summary.txt')"
+              >
+                📥 下载摘要 (.txt)
               </el-button>
-              <el-button @click="downloadFile('all_KASP_primers.txt')">
-                📥 下载完整结果
+              <el-button 
+                type="default"
+                class="download-btn"
+                @click="downloadFile('all_KASP_primers.txt')"
+              >
+                📥 下载完整结果 (.txt)
               </el-button>
             </div>
           </div>
@@ -238,8 +246,25 @@ const pollStatus = async (jobId) => {
 }
 
 // 下载文件
-const downloadFile = (filename) => {
-  window.open(`/api/download/${currentJobId.value}/${filename}`, '_blank')
+const downloadFile = async (filename) => {
+  if (!currentJobId.value) return
+  
+  try {
+    const response = await axios.get(`/api/download/${currentJobId.value}/${filename}`, {
+      responseType: 'blob'
+    })
+    
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    ElMessage.error('下载失败')
+  }
 }
 
 // 复制到剪贴板
@@ -284,7 +309,7 @@ const getScoreColor = (score) => {
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -325,7 +350,8 @@ const getScoreColor = (score) => {
 
 .app-main {
   padding: 32px 24px;
-  max-width: 1200px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -425,6 +451,22 @@ const getScoreColor = (score) => {
 :deep(.el-table td.el-table__cell) {
   padding: 12px 0;
 }
+
+/* 修复固定列重叠问题 - 针对 Element Plus 的具体实现 */
+:deep(.el-table .el-table-fixed-column--left),
+:deep(.el-table .el-table-fixed-column--right),
+:deep(.el-table__fixed-right),
+:deep(.el-table__fixed) {
+  background-color: #ffffff !important;
+  z-index: 2 !important;
+}
+
+/* 确保表头也覆盖 */
+:deep(.el-table__header-wrapper th.el-table-fixed-column--left),
+:deep(.el-table__header-wrapper th.el-table-fixed-column--right) {
+  background-color: var(--slate-50) !important;
+}
+
 
 .primer-sequence-box {
   background: #ffffff;
