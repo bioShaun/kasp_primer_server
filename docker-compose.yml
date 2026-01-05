@@ -1,0 +1,9 @@
+services:
+  kasp:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./test_data/blastdb:/data/genomes:ro
+    environment:
+      - GENOME_CONFIG=/app/genomes.yaml

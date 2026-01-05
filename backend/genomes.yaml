@@ -1,0 +1,5 @@
+genomes:
+  - id: test_reference
+    name: "Test Reference (小麦测试)"
+    path: /Users/guilixuan/project/kasp/kasp_primer_server/test_data/blastdb/test_reference.fa
+
