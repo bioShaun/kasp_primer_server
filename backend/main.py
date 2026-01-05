@@ -2,6 +2,10 @@ import json
 import uuid
 import os
 import subprocess
+import asyncio
+import shutil
+import time
+import logging
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
@@ -9,13 +13,41 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import yaml
 
-from config import GENOMES_CONFIG, WORK_DIR, MAX_SNP_COUNT
+from config import GENOMES_CONFIG, WORK_DIR, MAX_SNP_COUNT, RETENTION_HOURS, CLEANUP_INTERVAL_SECONDS
 
 app = FastAPI(title="KASP Primer Design API")
+logger = logging.getLogger("uvicorn.error")
 
 class DesignRequest(BaseModel):
     snps: str
     genome: str
+
+async def cleanup_old_jobs():
+    """Background task to clean up old job directories."""
+    while True:
+        try:
+            now = time.time()
+            cutoff = now - (RETENTION_HOURS * 3600)
+            if WORK_DIR.exists():
+                for job_dir in WORK_DIR.iterdir():
+                    if job_dir.is_dir():
+                        try:
+                            mtime = job_dir.stat().st_mtime
+                            if mtime < cutoff:
+                                logger.info(f"Cleaning up old job: {job_dir.name}")
+                                shutil.rmtree(job_dir, ignore_errors=True)
+                        except OSError:
+                            pass
+        except Exception as e:
+            logger.error(f"Cleanup task error: {e}")
+        await asyncio.sleep(CLEANUP_INTERVAL_SECONDS)
+
+
+@app.on_event("startup")
+async def start_cleanup_task():
+    """Start the background cleanup task."""
+    asyncio.create_task(cleanup_old_jobs())
+
 
 @app.get("/api/genomes")
 def get_genomes():

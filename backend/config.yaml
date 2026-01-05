@@ -1,0 +1,10 @@
+# KASP Primer Design Service - 系统配置
+
+# 清理任务设置
+cleanup:
+  retention_hours: 24    # 结果保留时间（小时）
+  interval_seconds: 3600 # 清理检查间隔（秒）
+
+# 限制设置
+limits:
+  max_snp_count: 50      # 单次提交最大 SNP 数量

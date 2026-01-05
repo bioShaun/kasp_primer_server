@@ -1,3 +1,5 @@
+# 基因组配置 (Docker)
+
 genomes:
   - id: test_reference
     name: "Test Reference (小麦测试)"
