@@ -3,7 +3,7 @@ import { createI18n } from 'vue-i18n'
 const messages = {
     zh: {
         app: {
-            title: 'KASP 设计中心',
+            title: 'KASP 设计',
             subtitle: '为 SNP 分型提供的精准引物设计服务',
             loadingGenomes: '正在加载基因组...',
             loadGenomesError: '加载基因组失败',
@@ -31,7 +31,7 @@ const messages = {
             uploadFile: '上传文件',
             formatHelper: '格式: Chr\\tPos\\tRef\\tAlt (制表符分隔)',
             loadExample: '加载示例',
-            placeholder: 'chr7A\t7659\tT\tC\\nchr7A\t7716\tA\tG',
+            placeholder: 'chr7A\t7659\tT\tC\nchr7A\t7716\tA\tG',
             dragDrop: '将坐标文件拖拽至此处',
             browse: '或点击进行浏览',
             preview: '预览 (前 5 行):',
@@ -62,7 +62,7 @@ const messages = {
     },
     en: {
         app: {
-            title: 'KASP Design Studio',
+            title: 'KASP Design',
             subtitle: 'Precision Primer Design for SNP Genotyping',
             loadingGenomes: 'Loading genomes...',
             loadGenomesError: 'Failed to load genomes',
@@ -90,7 +90,7 @@ const messages = {
             uploadFile: 'Upload File',
             formatHelper: 'Format: Chr\\tPos\\tRef\\tAlt (Tab-separated)',
             loadExample: 'Load Example',
-            placeholder: 'chr7A\t7659\tT\tC\\nchr7A\t7716\tA\tG',
+            placeholder: 'chr7A\t7659\tT\tC\nchr7A\t7716\tA\tG',
             dragDrop: 'Drag & drop your Coordinate file here',
             browse: 'or click to browse',
             preview: 'Preview (First 5 lines):',

@@ -24,6 +24,8 @@ RUN pip install --no-cache-dir \
 
 COPY --from=frontend /app/dist /app/static
 COPY backend/ /app
+# Use Docker-specific genome configuration
+COPY backend/genomes.docker.yaml /app/genomes.yaml
 WORKDIR /app
 
 EXPOSE 8000

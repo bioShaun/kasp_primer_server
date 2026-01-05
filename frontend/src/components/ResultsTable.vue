@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { axios } from 'axios'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { BarChart3, Download } from 'lucide-vue-next'

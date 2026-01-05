@@ -3,7 +3,7 @@ import uuid
 import os
 import subprocess
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -26,14 +26,14 @@ def get_genomes():
 
 
 @app.post("/api/design")
-def submit_design(req: DesignRequest):
-    """提交设计任务"""
-    # ... (validation remains same)
+def submit_design(req: DesignRequest, background_tasks: BackgroundTasks):
+    """提交设计任务 - 立即返回job_id，后台执行分析"""
+    # Validation
     lines = [l for l in req.snps.strip().split("\n") if l.strip()]
     if len(lines) > MAX_SNP_COUNT:
         raise HTTPException(400, f"最多支持 {MAX_SNP_COUNT} 个 SNP")
     
-    # ... (genome lookup remains same)
+    # Genome lookup
     with open(GENOMES_CONFIG) as f:
         config = yaml.safe_load(f)
     
@@ -57,9 +57,15 @@ def submit_design(req: DesignRequest):
     input_file = job_dir / "input.txt"
     input_file.write_text(req.snps)
     
-    # 执行 Pipeline （使用位置参数）
+    # 添加到后台任务队列 - 立即返回
+    background_tasks.add_task(run_pipeline, job_dir, input_file, genome_path)
+    
+    return {"job_id": job_id, "status": "pending"}
+
+
+def run_pipeline(job_dir: Path, input_file: Path, genome_path: str):
+    """后台执行 snp-primer pipeline"""
     try:
-        # 使用 shell=True 并显式设置环境变量，尝试绕过 uvicorn 子进程的限制
         cmd = f"export HOME=/tmp; export BLASTDB_LM_MB=100; snp-primer {input_file} {genome_path} -o {job_dir}"
         
         result = subprocess.run(
@@ -68,24 +74,16 @@ def submit_design(req: DesignRequest):
             capture_output=True, text=True, timeout=300
         )
         
-        # Debug: 写入运行日志
+        # 写入运行日志
         (job_dir / "stdout.log").write_text(result.stdout)
         (job_dir / "stderr.log").write_text(result.stderr)
 
         if result.returncode != 0:
             (job_dir / "error.log").write_text(result.stderr)
-            return {"job_id": job_id, "status": "failed", "error": result.stderr[:500]}
     except subprocess.TimeoutExpired:
-        return {"job_id": job_id, "status": "timeout"}
+        (job_dir / "error.log").write_text("Pipeline execution timed out after 300 seconds.")
     except FileNotFoundError:
-        # snp-primer not found - return helpful error
-        return {
-            "job_id": job_id, 
-            "status": "failed", 
-            "error": "snp-primer command not found. Please install SNP_Primer_Pipeline3."
-        }
-    
-    return {"job_id": job_id, "status": "completed"}
+        (job_dir / "error.log").write_text("snp-primer command not found. Please install SNP_Primer_Pipeline3.")
 
 
 @app.get("/api/job/{job_id}")
