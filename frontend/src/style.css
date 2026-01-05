@@ -1,57 +1,98 @@
 :root {
-  /* Brand Colors - Modern Teal/Emerald */
+  /* Scientific Teal Palette (Primary) - Conveying precision & bio-tech */
   --primary-50: #f0fdfa;
   --primary-100: #ccfbf1;
+  --primary-200: #99f6e4;
+  --primary-300: #5eead4;
+  --primary-400: #2dd4bf;
   --primary-500: #14b8a6;
   --primary-600: #0d9488;
   --primary-700: #0f766e;
+  --primary-800: #115e59;
   --primary-900: #134e4a;
 
-  /* Neutral scale for UI */
+  /* Slate Palette (Neutral/Backgrounds) - Clean, professional contrast */
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
   --slate-400: #94a3b8;
+  --slate-500: #64748b;
   --slate-600: #475569;
+  --slate-700: #334155;
   --slate-800: #1e293b;
   --slate-900: #0f172a;
 
   /* Functional Colors */
-  --c-success: #10b981;
-  --c-warning: #f59e0b;
-  --c-error: #ef4444;
-  --c-bg-gradient: radial-gradient(at 0% 0%, hsla(168, 83%, 94%, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(196, 75%, 96%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(168, 83%, 94%, 1) 0, transparent 50%);
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
 
-  /* Effects */
+  /* Glassmorphism System */
   --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --backdrop-blur: blur(12px);
-
-  /* Typography */
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Base Reset & Typography */
 body {
+  margin: 0;
   font-family: var(--font-sans);
-  background-color: var(--slate-50);
-  background-image: var(--c-bg-gradient);
+  background-color: #f0f4f8;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.05) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--slate-800);
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-code,
-pre {
-  font-family: var(--font-mono);
+button {
+  font-family: var(--font-sans);
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--slate-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-400);
+}
+
+/* Global Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
