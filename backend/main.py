@@ -1,4 +1,6 @@
+import json
 import uuid
+import os
 import subprocess
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
@@ -15,7 +17,6 @@ class DesignRequest(BaseModel):
     snps: str
     genome: str
 
-
 @app.get("/api/genomes")
 def get_genomes():
     """返回可用基因组列表"""
@@ -27,12 +28,12 @@ def get_genomes():
 @app.post("/api/design")
 def submit_design(req: DesignRequest):
     """提交设计任务"""
-    # 验证 SNP 数量
+    # ... (validation remains same)
     lines = [l for l in req.snps.strip().split("\n") if l.strip()]
     if len(lines) > MAX_SNP_COUNT:
         raise HTTPException(400, f"最多支持 {MAX_SNP_COUNT} 个 SNP")
     
-    # 获取基因组路径
+    # ... (genome lookup remains same)
     with open(GENOMES_CONFIG) as f:
         config = yaml.safe_load(f)
     
@@ -58,10 +59,19 @@ def submit_design(req: DesignRequest):
     
     # 执行 Pipeline （使用位置参数）
     try:
+        # 使用 shell=True 并显式设置环境变量，尝试绕过 uvicorn 子进程的限制
+        cmd = f"export HOME=/tmp; export BLASTDB_LM_MB=100; snp-primer {input_file} {genome_path} -o {job_dir}"
+        
         result = subprocess.run(
-            ["snp-primer", str(input_file), genome_path, "-o", str(job_dir)],
+            cmd,
+            shell=True,
             capture_output=True, text=True, timeout=300
         )
+        
+        # Debug: 写入运行日志
+        (job_dir / "stdout.log").write_text(result.stdout)
+        (job_dir / "stderr.log").write_text(result.stderr)
+
         if result.returncode != 0:
             (job_dir / "error.log").write_text(result.stderr)
             return {"job_id": job_id, "status": "failed", "error": result.stderr[:500]}

@@ -1,9 +1,17 @@
 <template>
   <div id="app" class="app-container">
     <el-container>
-      <el-header class="app-header">
-        <h1>🧬 KASP Primer Design Service</h1>
-      </el-header>
+    <el-header class="app-header">
+      <div class="header-content">
+        <div class="header-brand">
+          <span class="brand-logo">🧬</span>
+          <div class="header-text">
+            <h1>KASP Primer Design</h1>
+            <p class="header-subtitle">Precision Primer Design for SNP Genotyping</p>
+          </div>
+        </div>
+      </div>
+    </el-header>
       
       <el-main class="app-main">
         <el-card class="input-section">
@@ -68,17 +76,54 @@
           />
 
           <div v-if="results.length > 0">
-            <el-table :data="results" stripe border style="width: 100%" max-height="500">
+            <el-table :data="results" stripe style="width: 100%" max-height="600" class="results-table">
               <el-table-column prop="Index" label="引物组 ID" width="180" fixed show-overflow-tooltip />
-              <el-table-column prop="Allele_A" label="等位基因 A 引物" min-width="260" show-overflow-tooltip />
-              <el-table-column prop="Tm_A" label="Tm A" width="70" />
-              <el-table-column prop="Allele_B" label="等位基因 B 引物" min-width="260" show-overflow-tooltip />
-              <el-table-column prop="Tm_B" label="Tm B" width="70" />
-              <el-table-column prop="Common" label="通用引物" min-width="260" show-overflow-tooltip />
-              <el-table-column prop="Tm_C" label="Tm C" width="70" />
-              <el-table-column prop="Product_Size" label="产物大小" width="90" />
-              <el-table-column prop="Genomic_Range" label="基因组位置" width="120" />
-              <el-table-column prop="Score" label="评分" width="70" />
+              
+              <el-table-column prop="Allele_A" label="等位基因 A 引物" min-width="280">
+                <template #default="scope">
+                  <div class="primer-sequence-box" @click="copyToClipboard(scope.row.Allele_A)">
+                    <code class="primer-code">{{ scope.row.Allele_A }}</code>
+                    <span class="tm-tag">{{ scope.row.Tm_A }}°C</span>
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="Allele_B" label="等位基因 B 引物" min-width="280">
+                <template #default="scope">
+                  <div class="primer-sequence-box" @click="copyToClipboard(scope.row.Allele_B)">
+                    <code class="primer-code">{{ scope.row.Allele_B }}</code>
+                    <span class="tm-tag">{{ scope.row.Tm_B }}°C</span>
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="Common" label="通用引物" min-width="280">
+                <template #default="scope">
+                  <div class="primer-sequence-box" @click="copyToClipboard(scope.row.Common)">
+                    <code class="primer-code">{{ scope.row.Common }}</code>
+                    <span class="tm-tag">{{ scope.row.Tm_C }}°C</span>
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="Product_Size" label="大小" width="80" align="center" />
+              <el-table-column prop="Genomic_Range" label="范围" width="120" show-overflow-tooltip />
+              
+              <el-table-column prop="Score" label="评分" width="100" align="center">
+                <template #default="scope">
+                  <div class="score-container">
+                    <el-progress 
+                      type="circle" 
+                      :percentage="Math.min(parseFloat(scope.row.Score) * 10, 100)" 
+                      :width="32" 
+                      :stroke-width="3"
+                      :color="getScoreColor(scope.row.Score)"
+                      :show-text="false"
+                    />
+                    <span class="score-text">{{ scope.row.Score }}</span>
+                  </div>
+                </template>
+              </el-table-column>
             </el-table>
 
             <div class="download-section">
@@ -91,6 +136,16 @@
             </div>
           </div>
         </el-card>
+        <el-empty 
+          v-if="!results.length && !loading && !error" 
+          description="准备就绪，开始设计您的引物"
+          :image-size="160"
+          class="empty-state"
+        >
+          <template #image>
+            <div class="empty-icon">🧬</div>
+          </template>
+        </el-empty>
       </el-main>
     </el-container>
   </div>
@@ -146,31 +201,39 @@ const submitDesign = async () => {
     if (status === 'failed') {
       error.value = jobError || '设计任务失败'
       ElMessage.error('设计失败')
-    } else if (status === 'completed') {
-      await fetchResults(job_id)
-      ElMessage.success('设计完成')
+      loading.value = false
+    } else {
+      // 启动轮询
+      pollStatus(job_id)
     }
   } catch (err) {
     error.value = err.response?.data?.detail || '提交失败'
     ElMessage.error('提交失败')
-  } finally {
     loading.value = false
   }
 }
 
-// 获取结果
-const fetchResults = async (jobId) => {
+// 轮询任务状态
+const pollStatus = async (jobId) => {
   try {
     const response = await axios.get(`/api/job/${jobId}`)
     const { status, results: jobResults, error: jobError } = response.data
     
-    if (status === 'completed' && jobResults) {
-      results.value = jobResults
+    if (status === 'completed') {
+      if (jobResults) results.value = jobResults
+      loading.value = false
+      ElMessage.success('设计完成')
     } else if (status === 'failed') {
       error.value = jobError || '任务执行失败'
+      loading.value = false
+      ElMessage.error(error.value)
+    } else {
+      // 继续轮询
+      setTimeout(() => pollStatus(jobId), 1000)
     }
   } catch (err) {
-    error.value = '获取结果失败'
+    loading.value = false
+    ElMessage.error('获取状态失败')
   }
 }
 
@@ -178,79 +241,244 @@ const fetchResults = async (jobId) => {
 const downloadFile = (filename) => {
   window.open(`/api/download/${currentJobId.value}/${filename}`, '_blank')
 }
+
+// 复制到剪贴板
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage({
+      message: '已复制到剪贴板',
+      type: 'success',
+      plain: true,
+      duration: 1500
+    })
+  } catch (err) {
+    ElMessage.error('复制失败')
+  }
+}
+
+// 评分颜色
+const getScoreColor = (score) => {
+  const s = parseFloat(score)
+  if (s >= 7) return '#10b981'
+  if (s >= 4) return '#f59e0b'
+  return '#ef4444'
+}
 </script>
 
 <style scoped>
 .app-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
 }
 
 .app-header {
-  background-color: #2c3e50;
-  color: white;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 12px 0;
+  height: auto;
+  box-shadow: none;
 }
 
-.app-header h1 {
-  margin: 0;
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-logo {
+  font-size: 32px;
+  filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.2));
+  animation: float 6s ease-in-out infinite;
+}
+
+.header-text h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
   font-size: 24px;
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-500) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.header-subtitle {
+  margin: 2px 0 0;
+  color: var(--slate-600);
+  font-size: 13px;
   font-weight: 500;
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
 .app-main {
-  padding: 24px;
-  max-width: 1400px;
+  padding: 32px 24px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .input-section,
 .result-section {
-  margin-bottom: 24px;
-  border-radius: 4px;
-  border: 1px solid #dee2e6;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 32px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
 .section-header {
   font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: 0.02em;
+}
+
+:deep(.el-card__header) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 16px 24px;
 }
 
 .download-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #dee2e6;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 12px;
 }
 
 :deep(.el-button--primary) {
-  background-color: #2c3e50;
-  border-color: #2c3e50;
-  border-radius: 4px;
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
+  border: none;
+  font-weight: 600;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
 
 :deep(.el-button--primary:hover) {
-  background-color: #3498db;
-  border-color: #3498db;
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
 }
 
 :deep(.el-input__inner),
 :deep(.el-textarea__inner) {
-  border-radius: 4px;
-  font-family: 'Roboto Mono', monospace;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: var(--font-mono);
   font-size: 13px;
+  transition: all 0.2s;
 }
 
-:deep(.el-table) {
-  font-size: 14px;
+:deep(.el-input__inner:focus),
+:deep(.el-textarea__inner:focus) {
+  background-color: #fff;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
-:deep(.el-table th) {
-  background-color: #f8f9fa;
-  color: #2c3e50;
+/* Results Table Styles */
+.results-table {
+  --el-table-border-color: transparent;
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.02);
+  background: transparent !important;
+}
+
+:deep(.el-table__inner-wrapper::before) {
+  display: none;
+}
+
+:deep(.el-table tr) {
+  background: transparent !important;
+}
+
+:deep(.el-table th.el-table__cell) {
+  color: var(--slate-600);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  padding: 12px 0;
+}
+
+:deep(.el-table td.el-table__cell) {
+  padding: 12px 0;
+}
+
+.primer-sequence-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primer-sequence-box:hover {
+  border-color: var(--primary-500);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.primer-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--slate-900);
+  font-weight: 500;
+}
+
+.tm-tag {
+  font-size: 11px;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  padding: 2px 6px;
+  border-radius: 4px;
   font-weight: 600;
+}
+
+.score-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.score-text {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--slate-800);
+}
+
+.empty-state {
+  margin-top: 60px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  filter: grayscale(1);
+  opacity: 0.2;
 }
 </style>

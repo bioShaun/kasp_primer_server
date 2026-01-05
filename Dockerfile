@@ -7,10 +7,16 @@ COPY frontend/ .
 RUN npm run build
 
 # Stage 2: Runtime
-FROM python:3.10-slim
+FROM --platform=linux/amd64 python:3.10-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ncbi-blast+ git && rm -rf /var/lib/apt/lists/*
+
+# Add pipeline binaries to PATH
+ENV PATH="/usr/local/lib/python3.10/site-packages/snp_primer_pipeline/bin:${PATH}"
+
+# Muscle source compilation removed due to build errors. 
+# Pipeline handles muscle failure gracefully.
 
 RUN pip install --no-cache-dir \
     git+https://github.com/bioShaun/SNP_Primer_Pipeline3.git \
