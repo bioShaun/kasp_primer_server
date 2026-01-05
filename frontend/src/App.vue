@@ -21,17 +21,29 @@
       <el-main class="app-main">
         <router-view></router-view>
       </el-main>
+
+      <el-footer class="app-footer">
+        <div class="footer-content">
+          <span class="footer-text">{{ $t('app.poweredBy') }}</span>
+          <a href="https://github.com/pinbo/SNP_Primer_Pipeline2" target="_blank" rel="noopener noreferrer" class="footer-link">
+            <Github class="footer-icon" />
+            SNP_Primer_Pipeline2
+          </a>
+        </div>
+      </el-footer>
     </el-container>
   </div>
 </template>
 
 <script setup>
-// Simplest setup - most logic moved to views
+import { Github } from 'lucide-vue-next'
 </script>
 
 <style scoped>
 .app-container {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header {
@@ -81,5 +93,49 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+  flex: 1;
+}
+
+.app-footer {
+  padding: 24px 0;
+  color: var(--slate-400);
+  font-size: 13px;
+  text-align: center;
+  border-top: 1px solid var(--slate-100);
+  background: white;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.footer-text {
+  color: var(--slate-500);
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--slate-700);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--slate-50);
+}
+
+.footer-link:hover {
+  color: var(--primary-700);
+  background: var(--primary-50);
+}
+
+.footer-icon {
+  width: 14px;
+  height: 14px;
 }
 </style>

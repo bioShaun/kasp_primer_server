@@ -3,7 +3,7 @@ import { createI18n } from 'vue-i18n'
 const messages = {
     zh: {
         app: {
-            title: 'KASP 设计',
+            title: 'KASP 引物设计',
             subtitle: '为 SNP 分型提供的精准引物设计服务',
             loadingGenomes: '正在加载基因组...',
             loadGenomesError: '加载基因组失败',
@@ -21,7 +21,8 @@ const messages = {
                 fastDesc: '后端并行处理',
                 comprehensive: '全面',
                 comprehensiveDesc: '完整的热力学分析'
-            }
+            },
+            poweredBy: '核心算法基于开源项目'
         },
         input: {
             title: '设计参数',
@@ -62,7 +63,7 @@ const messages = {
     },
     en: {
         app: {
-            title: 'KASP Design',
+            title: 'KASP Primer Design',
             subtitle: 'Precision Primer Design for SNP Genotyping',
             loadingGenomes: 'Loading genomes...',
             loadGenomesError: 'Failed to load genomes',
@@ -80,7 +81,8 @@ const messages = {
                 fastDesc: 'Parallelized backend processing',
                 comprehensive: 'Comprehensive',
                 comprehensiveDesc: 'Full thermodynamic analysis'
-            }
+            },
+            poweredBy: 'Core algorithm based on open-source project'
         },
         input: {
             title: 'Design Parameters',
