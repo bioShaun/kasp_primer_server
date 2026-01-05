@@ -48,13 +48,18 @@ docker-compose up --build -d
 ```
 kasp_primer_server/
 ├── backend/              # FastAPI 后端
-│   ├── main.py          # 主应用
+│   ├── main.py          # 主应用 (异步处理)
 │   ├── config.py        # 配置
-│   ├── genomes.yaml     # 基因组配置
+│   ├── genomes.yaml     # 基因组配置 (本地)
+│   ├── genomes.docker.yaml # 基因组配置 (Docker)
 │   └── requirements.txt
 ├── frontend/            # Vue 3 前端
 │   ├── src/
-│   │   ├── App.vue     # 主组件
+│   │   ├── views/      # 页面组件
+│   │   │   ├── HomeView.vue
+│   │   │   └── ResultsView.vue
+│   │   ├── router/     # 路由配置
+│   │   ├── App.vue     # 主布局
 │   │   ├── main.js     # 入口
 │   │   └── style.css   # 全局样式
 │   └── vite.config.js
@@ -132,8 +137,8 @@ genomes:
 - [x] Phase 1: 基础搭建
 - [x] Phase 2: 后端 API 实现
 - [x] Phase 3: 前端 UI 实现
-- [ ] Phase 4: Docker 集成测试
-- [ ] Phase 5: 异步任务处理 (Celery)
+- [x] Phase 4: Docker 集成测试
+- [x] Phase 5: 异步任务处理 (FastAPI BackgroundTasks)
 - [ ] Phase 6: 结果文件自动清理
 
 ## 许可证
