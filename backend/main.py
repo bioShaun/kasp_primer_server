@@ -11,14 +11,6 @@ from config import GENOMES_CONFIG, WORK_DIR, MAX_SNP_COUNT
 
 app = FastAPI(title="KASP Primer Design API")
 
-# 挂载静态文件
-try:
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-except RuntimeError:
-    # Static directory doesn't exist yet (development mode)
-    pass
-
-
 class DesignRequest(BaseModel):
     snps: str
     genome: str
@@ -128,10 +120,17 @@ def download_file(job_id: str, filename: str):
     return FileResponse(file_path, filename=filename)
 
 
+# 挂载静态文件 (在所有 API 路由之后挂载)
 @app.get("/")
 def root():
     """返回前端主页"""
-    try:
-        return FileResponse("static/index.html")
-    except Exception:
-        return {"message": "KASP Primer Design API", "docs": "/docs"}
+    index_path = Path("static/index.html")
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {"message": "KASP Primer Design API", "docs": "/docs"}
+
+# 挂载 assets 等静态资源
+try:
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+except Exception:
+    pass
