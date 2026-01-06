@@ -71,7 +71,12 @@ const pollStatus = async () => {
         snpCount.value = jobResults.length
       }
       jobStatus.value = 'completed'
-      ElMessage.success(t('app.designSuccess'))
+      
+      const shownKey = `kasp_shown_${jobId}`
+      if (!sessionStorage.getItem(shownKey)) {
+          ElMessage.success(t('app.designSuccess'))
+          sessionStorage.setItem(shownKey, 'true')
+      }
     } else if (status === 'failed') {
       jobStatus.value = 'failed'
       error.value = jobError || t('app.designFailed')

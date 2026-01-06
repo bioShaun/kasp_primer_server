@@ -57,6 +57,16 @@ const messages = {
             common: '通用引物',
             size: '产物长度',
             quality: '质量',
+            scoreInfo: {
+                title: '评分公式详情',
+                formula: 'Score = 5.0 × (3\'端差异) + (150 / 产物长度) + 0.1 × (总差异) - 0.1 × (Tm差异)',
+                components: [
+                    { label: '3\'端差异 (x5)', desc: '关键特异性指标，权重最高' },
+                    { label: '产物长度 (150/bp)', desc: '越短越好，提高扩增效率' },
+                    { label: '总差异数 (/10)', desc: '整体特异性贡献' },
+                    { label: 'Tm 差异 (/10)', desc: '惩罚项，越小越好' }
+                ]
+            },
             copied: '已复制到剪贴板',
             copyFailed: '复制失败'
         }
@@ -117,6 +127,16 @@ const messages = {
             common: 'Common Primer',
             size: 'Size',
             quality: 'Quality',
+            scoreInfo: {
+                title: 'Score Formula Details',
+                formula: 'Score = 5.0 × (3\' Diff) + (150 / Size) + 0.1 × (Total Diff) - 0.1 × (Tm Diff)',
+                components: [
+                    { label: '3\' Diff (x5)', desc: 'Key specificity (Highest weight)' },
+                    { label: 'Size (150/bp)', desc: 'Smaller is better (Efficiency)' },
+                    { label: 'Total Diff (/10)', desc: 'Overall specificity' },
+                    { label: 'Tm Diff (/10)', desc: 'Penalty for imbalance' }
+                ]
+            },
             copied: 'Copied to clipboard',
             copyFailed: 'Failed to copy'
         }

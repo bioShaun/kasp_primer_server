@@ -4,6 +4,7 @@
       <BarChart3 class="header-icon" />
       <h3>{{ $t('results.title') }}</h3>
       <div class="header-actions">
+
         <el-button-group>
           <el-button size="small" @click="downloadFile('all_KASP_primers_summary.txt')">
             <Download class="btn-icon" /> {{ $t('results.summary') }}
@@ -63,7 +64,27 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="Score" :label="$t('results.quality')" width="120" align="center" fixed="right">
+        <el-table-column prop="Score" width="120" align="center" fixed="right">
+          <template #header>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;">
+              <span>{{ $t('results.quality') }}</span>
+              <el-tooltip placement="top" effect="light" popper-class="unique-light-tooltip">
+                <template #content>
+                  <div class="unique-tooltip-content">
+                    <span class="tooltip-title">{{ $t('results.scoreInfo.title') }}</span>
+                    <code class="tooltip-formula">{{ $t('results.scoreInfo.formula') }}</code>
+                    <ul class="tooltip-list">
+                      <li v-for="(item, idx) in $t('results.scoreInfo.components')" :key="idx">
+                        <span class="tooltip-label">{{ item.label }}</span>
+                        <span>{{ item.desc }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </template>
+                <HelpCircle class="help-icon" :size="14" />
+              </el-tooltip>
+            </div>
+          </template>
           <template #default="scope">
             <div class="score-container">
               <el-progress 
@@ -87,7 +108,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { BarChart3, Download } from 'lucide-vue-next'
+import { BarChart3, Download, HelpCircle } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
@@ -169,6 +190,58 @@ const downloadFile = (filename) => {
   margin-right: 6px;
 }
 
+.unique-tooltip-content {
+  max-width: 600px;
+  white-space: nowrap;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: block;
+  font-size: 13px;
+  color: var(--primary-700);
+}
+
+.tooltip-formula {
+  background: var(--slate-100);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-bottom: 8px;
+  display: block;
+  border: 1px solid var(--slate-200);
+  color: var(--slate-700);
+}
+
+.tooltip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 16px;
+}
+
+.tooltip-list li {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--slate-600);
+}
+
+.tooltip-label {
+  color: var(--primary-600);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.score-text {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--slate-800);
+}
+
 .results-table {
   --el-table-border-color: var(--slate-100);
   --el-table-header-bg-color: transparent;
@@ -243,9 +316,11 @@ const downloadFile = (filename) => {
   gap: 8px;
 }
 
-.score-text {
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--slate-800);
+.help-icon {
+  flex-shrink: 0;
+  cursor: help;
+  color: var(--slate-400);
+  display: inline-flex;
 }
+
 </style>
